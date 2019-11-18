@@ -17,6 +17,7 @@ knitr::opts_chunk$set(
 
 <!-- badges: start -->
 [![Travis build status](https://travis-ci.org/benmarwick/polygonoverlap.svg?branch=master)](https://travis-ci.org/benmarwick/polygonoverlap)
+[![Launch Rstudio Binder](http://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/benmarwick/polygonoverlap/master?urlpath=rstudio)
 <!-- badges: end -->
 
 The goal of polygonoverlap is to compute the probability that an observed area of overlap between two sets of polygons is due to chance. We assume one set of polygons can freely move, and another set is fixed in space. We randomly relocate the first set of polygons many times, and for each relocation, we compute the area of overlap. After repeating this random relocation many times, we generate a distribution of overlap areas. We compare this distribution of randomly-generated overlap areas to the observed overlap area to compute a p-value. This is useful for answering the question "is the location of the first set of polygons non-random with respect to overlapping the fixed set of polygons?", or "is the observed amount of overlap of the two sets of polygons due to chance alone, or some other process?"

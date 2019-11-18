@@ -7,6 +7,8 @@
 
 [![Travis build
 status](https://travis-ci.org/benmarwick/polygonoverlap.svg?branch=master)](https://travis-ci.org/benmarwick/polygonoverlap)
+[![Launch Rstudio
+Binder](http://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/benmarwick/polygonoverlap/master?urlpath=rstudio)
 <!-- badges: end -->
 
 The goal of polygonoverlap is to compute the probability that an
