@@ -1,0 +1,15 @@
+Package: polygonoverlap
+Type: Package
+Title: What the Package Does (Title Case)
+Version: 0.1.0
+Author: Ben Marwick 
+Maintainer: Ben Marwick <benmarwick@gmail.com>
+Description: The goal of polygonoverlap is to compute the probability that an observed area of overlap between two sets of polygons is due to chance.
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Imports:
+    maptools (>= 0.9-5),
+    PBSmapping (>= 2.72.1),
+    sp (>= 1.3-1)
+RoxygenNote: 6.1.1
