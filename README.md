@@ -28,7 +28,7 @@ You can install the development version of polygonoverlap from GitHub
 with:
 
 ``` r
-remotes::install_.packages_github("benmarwick/polygonoverlap")
+remotes::install_github("benmarwick/polygonoverlap")
 ```
 
 ## Example
@@ -40,26 +40,13 @@ Currently this works with shapefiles that are loaded into R using
 ``` r
 library(polygonoverlap)
 library(here)
-#> here() starts at /Users/bmarwick/Desktop/2019 Autumn 482 & 486/polygonoverlap
 ```
 
 ``` r
 # load the data contained in the pkg so we can demonstrate
-bounding_box_polygon <- rgdal::readOGR(here("data-raw/MK_II_excv_outline.shp"))
-#> OGR data source with driver: ESRI Shapefile 
-#> Source: "/Users/bmarwick/Desktop/2019 Autumn 482 & 486/polygonoverlap/data-raw/MK_II_excv_outline.shp", layer: "MK_II_excv_outline"
-#> with 1 features
-#> It has 1 fields
-input_polygons <- rgdal::readOGR(here("data-raw/rock_poly.shp"))
-#> OGR data source with driver: ESRI Shapefile 
-#> Source: "/Users/bmarwick/Desktop/2019 Autumn 482 & 486/polygonoverlap/data-raw/rock_poly.shp", layer: "rock_poly"
-#> with 42 features
-#> It has 5 fields
-other_polygons <- rgdal::readOGR(here("data-raw/skele_poly.shp"))
-#> OGR data source with driver: ESRI Shapefile 
-#> Source: "/Users/bmarwick/Desktop/2019 Autumn 482 & 486/polygonoverlap/data-raw/skele_poly.shp", layer: "skele_poly"
-#> with 19 features
-#> It has 4 fields
+bounding_box_polygon <- rgdal::readOGR(here("data-raw/MK_II_excv_outline.shp"), verbose = FALSE)
+input_polygons <- rgdal::readOGR(here("data-raw/rock_poly.shp"), verbose = FALSE)
+other_polygons <- rgdal::readOGR(here("data-raw/skele_poly.shp"), verbose = FALSE)
 ```
 
 We can take a quick look to see these polygons, green is our
@@ -80,8 +67,8 @@ below we dissolve those overlap areas into single polygons so we don’t
 measure multiple overlaps in one location.
 
 Now we shuffle the set of `input_polygons` to random locations within
-our bounding box area. We repeat this random shuffle 100 times, and save
-the locations of the polygons for each random shuffle event:
+our bounding box area. We repeat this random shuffle many times, and
+save the locations of the polygons for each random shuffle event:
 
 ``` r
 # This may take a minute or two
@@ -155,8 +142,9 @@ ggplot(areas_of_overlap_from_random_shuffle,
                  " random shuffles")) + 
   geom_vline(xintercept = observed_polygon_overlap, 
              col = "red") + 
+  ylim(0, 100) +
   annotate("text", 
-           x = 0.45, y = 65, 
+           x = 0.45, y = 85, 
            label = paste0("Observed \nvalue = ",
                          round(observed_polygon_overlap,2), 
                          " \n(p = ", round(pval,3), ")"), col = "red")
