@@ -16,6 +16,7 @@ knitr::opts_chunk$set(
 # polygonoverlap
 
 <!-- badges: start -->
+[![Travis build status](https://travis-ci.org/benmarwick/polygonoverlap.svg?branch=master)](https://travis-ci.org/benmarwick/polygonoverlap)
 <!-- badges: end -->
 
 The goal of polygonoverlap is to compute the probability that an observed area of overlap between two sets of polygons is due to chance. We assume one set of polygons can freely move, and another set is fixed in space. We randomly relocate the first set of polygons many times, and for each relocation, we compute the area of overlap. After repeating this random relocation many times, we generate a distribution of overlap areas. We compare this distribution of randomly-generated overlap areas to the observed overlap area to compute a p-value. This is useful for answering the question "is the location of the first set of polygons non-random with respect to overlapping the fixed set of polygons?", or "is the observed amount of overlap of the two sets of polygons due to chance alone, or some other process?"
@@ -81,7 +82,7 @@ library(ggplot2)
 ggplot(areas_of_overlap_from_random_shuffle,
        aes(area)) +
   geom_histogram() + 
-    labs(x = expression("Area of intersection of rocks and skeletons (m"^2*")"),
+    labs(x = expression("Areas of intersection of our two sets of polygons (m"^2*")"),
          y = "Frequency") +
   ggtitle(paste0("Distribution of areas of polygon overlap produced by ", n, " random shuffles"))
 ```
@@ -108,7 +109,7 @@ And we can show the observed value and p-value on the histogram like this:
 ggplot(areas_of_overlap_from_random_shuffle,
        aes(area)) +
   geom_histogram() + 
-    labs(x = expression("Area of intersection of rocks and skeletons (m"^2*")"),
+    labs(x = expression("Areas of intersection of our two sets of polygons (m"^2*")"),
          y = "Frequency") +
   ggtitle(paste0("Distribution of areas of polygon overlap produced by ", 
                  n, 
@@ -126,7 +127,7 @@ ggplot(areas_of_overlap_from_random_shuffle,
 
 This method was developed for this publication:
 
-> Lowe, Kelsey M., Lynley A. Wallis, Colin Pardoe, Ben Marwick5, Chris Clarkson, Tiina Manne, Mike A. Smith and Richard Fullagar 2014. Ground-penetrating radar and burial practices in western Arnhem Land, Australia. _Archaeology in Oceania_ <https://doi.org/10.1002/arco.5039>
+> Lowe, Kelsey M., Lynley A. Wallis, Colin Pardoe, Ben Marwick, Chris Clarkson, Tiina Manne, Mike A. Smith and Richard Fullagar 2014. Ground-penetrating radar and burial practices in western Arnhem Land, Australia. _Archaeology in Oceania_ <https://doi.org/10.1002/arco.5039>
 
 This package is an excerpt of code and data prepared for that paper, which was originally uploaded to  https://github.com/benmarwick/Rocks-and-burials-at-Madjebebe and archived at http://dx.doi.org/10.5281/zenodo.10616
 

@@ -5,6 +5,8 @@
 
 <!-- badges: start -->
 
+[![Travis build
+status](https://travis-ci.org/benmarwick/polygonoverlap.svg?branch=master)](https://travis-ci.org/benmarwick/polygonoverlap)
 <!-- badges: end -->
 
 The goal of polygonoverlap is to compute the probability that an
@@ -107,7 +109,7 @@ library(ggplot2)
 ggplot(areas_of_overlap_from_random_shuffle,
        aes(area)) +
   geom_histogram() + 
-    labs(x = expression("Area of intersection of rocks and skeletons (m"^2*")"),
+    labs(x = expression("Areas of intersection of our two sets of polygons (m"^2*")"),
          y = "Frequency") +
   ggtitle(paste0("Distribution of areas of polygon overlap produced by ", n, " random shuffles"))
 #> `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
@@ -146,7 +148,7 @@ this:
 ggplot(areas_of_overlap_from_random_shuffle,
        aes(area)) +
   geom_histogram() + 
-    labs(x = expression("Area of intersection of rocks and skeletons (m"^2*")"),
+    labs(x = expression("Areas of intersection of our two sets of polygons (m"^2*")"),
          y = "Frequency") +
   ggtitle(paste0("Distribution of areas of polygon overlap produced by ", 
                  n, 
@@ -167,7 +169,7 @@ ggplot(areas_of_overlap_from_random_shuffle,
 
 This method was developed for this publication:
 
-> Lowe, Kelsey M., Lynley A. Wallis, Colin Pardoe, Ben Marwick5, Chris
+> Lowe, Kelsey M., Lynley A. Wallis, Colin Pardoe, Ben Marwick, Chris
 > Clarkson, Tiina Manne, Mike A. Smith and Richard Fullagar 2014.
 > Ground-penetrating radar and burial practices in western Arnhem Land,
 > Australia. *Archaeology in Oceania*
