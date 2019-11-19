@@ -169,3 +169,9 @@ This package is an excerpt of code and data prepared for that paper,
 which was originally uploaded to
 <https://github.com/benmarwick/Rocks-and-burials-at-Madjebebe> and
 archived at <http://dx.doi.org/10.5281/zenodo.10616>
+
+## Code of Conduct
+
+Please note that the ‘polygonoverlap’ project is released with a
+[Contributor Code of Conduct](CODE_OF_CONDUCT.md). By contributing to
+this project, you agree to abide by its terms.
