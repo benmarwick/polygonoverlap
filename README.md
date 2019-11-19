@@ -74,7 +74,7 @@ save the locations of the polygons for each random shuffle event:
 
 ``` r
 # This may take a minute or two
-n <- 1000
+n <- 10000
 input_polygons_randomly_shuffled <- 
   shift_poly_to_random_points(bounding_box_polygon,
                               input_polygons,
@@ -122,7 +122,7 @@ our random distribution data to compute a p-value:
 pval <- 1 - sum(areas_of_overlap_from_random_shuffle$area <= observed_polygon_overlap) / n
 ```
 
-Using this p-vaue we can say that 7.3% of our randomly-shuffled input
+Using this p-vaue we can say that 6.28% of our randomly-shuffled input
 shapefiles result in an overlap with the other shapefiles that is equal
 to or greater than our observed overlap area. This indicates that our
 observed area of overlap is probably not random but a result of
@@ -144,9 +144,9 @@ ggplot(areas_of_overlap_from_random_shuffle,
                  " random shuffles")) + 
   geom_vline(xintercept = observed_polygon_overlap, 
              col = "red") + 
-  ylim(0, 100) +
+  ylim(0, 1000) +
   annotate("text", 
-           x = 0.45, y = 85, 
+           x = 0.425, y = 200, 
            label = paste0("Observed \nvalue = ",
                          round(observed_polygon_overlap,2), 
                          " \n(p = ", round(pval,3), ")"), col = "red")

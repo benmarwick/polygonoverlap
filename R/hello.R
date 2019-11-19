@@ -121,6 +121,7 @@ compute_overlap_area_of_polygons_randomly_shuffled <-
         PBSmapping::combinePolys(maptools::SpatialPolygons2PolySet(rocks_list[[i]])),
         "INT"
       )
+      if(!is.null(x)){
       x <- suppressWarnings(maptools::PolySet2SpatialPolygons(x))
       # extract area of intersecting polygons
       areas <- sapply(slot(x, "polygons"),
@@ -128,6 +129,9 @@ compute_overlap_area_of_polygons_randomly_shuffled <-
                         sapply(slot(x, "Polygons"), slot, "area"))
       # store output in list
       int_area[[i]] <- sum(areas)
+      } else {
+        int_area[[i]] <- 0
+      }
     }
     random_areas <- data.frame(area = unlist(int_area))
     return(random_areas)

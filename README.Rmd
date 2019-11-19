@@ -61,7 +61,7 @@ Now we shuffle the set of `input_polygons` to random locations within our boundi
 
 ```{r cache=TRUE}
 # This may take a minute or two
-n <- 1000
+n <- 10000
 input_polygons_randomly_shuffled <- 
   shift_poly_to_random_points(bounding_box_polygon,
                               input_polygons,
@@ -117,9 +117,9 @@ ggplot(areas_of_overlap_from_random_shuffle,
                  " random shuffles")) + 
   geom_vline(xintercept = observed_polygon_overlap, 
              col = "red") + 
-  ylim(0, 100) +
+  ylim(0, 1000) +
   annotate("text", 
-           x = 0.45, y = 85, 
+           x = 0.425, y = 200, 
            label = paste0("Observed \nvalue = ",
                          round(observed_polygon_overlap,2), 
                          " \n(p = ", round(pval,3), ")"), col = "red")
