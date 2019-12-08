@@ -8,5 +8,6 @@ USER ${NB_USER}
 
 
 RUN wget https://github.com/benmarwick/polygonoverlap/raw/master/DESCRIPTION && R -e "options(repos = list(CRAN = 'http://mran.revolutionanalytics.com/snapshot/2019-11-18/')); devtools::install_deps()"
+RUN R -e "devtools::install_github('benmarwick/polygonoverlap')"
 
 RUN rm DESCRIPTION.1; exit 0
