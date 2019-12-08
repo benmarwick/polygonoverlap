@@ -115,14 +115,14 @@ observed_polygon_overlap <-
                                             other_polygons)
 ```
 
-The value we get here is 0.494 square meteres. We can combine this with
+The value we get here is 0.53 square meteres. We can combine this with
 our random distribution data to compute a p-value:
 
 ``` r
 pval <- 1 - sum(areas_of_overlap_from_random_shuffle$area <= observed_polygon_overlap) / n
 ```
 
-Using this p-vaue we can say that 6.28% of our randomly-shuffled input
+Using this p-vaue we can say that 2.59% of our randomly-shuffled input
 shapefiles result in an overlap with the other shapefiles that is equal
 to or greater than our observed overlap area. This indicates that our
 observed area of overlap is probably not random but a result of

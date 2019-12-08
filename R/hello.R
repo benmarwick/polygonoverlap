@@ -156,6 +156,10 @@ compute_overlap_area_of_polygons_observed <-
     rocks <- input_polygons
     skeles <-  other_polygons
 
+    skeles <- maptools::unionSpatialPolygons(skeles,
+                                             ID=rep(1,
+                                                    times=length(skeles@polygons)))
+
 x <- PBSmapping::joinPolys( PBSmapping::combinePolys(maptools::SpatialPolygons2PolySet(rocks)),
                             PBSmapping::combinePolys(maptools::SpatialPolygons2PolySet(skeles)),
                 "INT" )
