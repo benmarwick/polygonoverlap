@@ -1,173 +1,192 @@
+#' Polygon Overlap Analysis using sf
+#'
+#' Modern implementation using sf package instead of sp/rgeos/rgdal
+#'
+#' This package computes the probability that an observed area of overlap
+#' between two sets of polygons is due to chance.
 
-#' Shift polygons to random points
+library(sf)
+library(ggplot2)
+
+#' Shift polygons to random points within a bounding box
 #'
-#' Shift polygons to random points in a bounding box
+#' @param bounding_box_polygon sf object representing the bounding box
+#' @param input_polygons sf object with polygons to be randomly shifted
+#' @param n number of random shuffles to perform
 #'
-#' @param bounding_box_polygon SpatialPolygonsDataFrame, a single polygon bounding box
-#' @param input_polygons SpatialPolygonsDataFrame, many polygons
-#' @param n integer, 100 to 1000 are usually good values
-#'
+#' @return A list of sf objects, each representing one random shuffle
 #' @export
+shift_poly_to_random_points <- function(bounding_box_polygon,
+                                        input_polygons,
+                                        n) {
 
+  # Get bounding box extent
+  bbox <- st_bbox(bounding_box_polygon)
 
-# Now we'll write a function that will take each rock in our rock shapefile
-# and shift it to a randomly chosen point from our 1000 random points.
-# That will result in a shapefile that contains a completely random
-# shuffle of the rocks within the excavation area. We'll nest that
-# function in another function that repeats that process of making a
-# random-shuffle shapefile `r  n <- 1000; n` times. We'll end up with
-# `r n` shapefiles of randomly rearranged rocks. This took a couple of
-# minutes to run on my computer. Output should be called
-# input_polygons_randomly_shuffled
+  # Calculate centroid of input polygons
+  input_centroid <- st_centroid(st_union(input_polygons))
+  input_coords <- st_coordinates(input_centroid)
 
-shift_poly_to_random_points <-
-  function(bounding_box_polygon, # SpatialPolygonsDataFrame
-           input_polygons,      # SpatialPolygonsDataFrame
-           n = 100) {
+  # Store results
+  result_list <- vector("list", n)
 
-  excv <-   bounding_box_polygon
-  rocks <- input_polygons
-  rnd <- sp::spsample(excv, n, type = "random")
+  # Perform n random shuffles
+  for (i in 1:n) {
+    # Generate random point within bounding box
+    repeat {
+      random_x <- runif(1, bbox["xmin"], bbox["xmax"])
+      random_y <- runif(1, bbox["ymin"], bbox["ymax"])
+      random_point <- st_point(c(random_x, random_y))
+      random_point <- st_sfc(random_point, crs = st_crs(bounding_box_polygon))
 
-  # Loops to generate n shapefiles with randomly located rocks
-  # n is the number of shapefiles to make
-  # (assigned in inline code in the para above)
-  # create a storage list for output of loop
-  rocks_list <- vector("list", length = n)
-  for (j in 1:n) {
-    # first loop
-    # create a storage list for output of loop
-    rocks_rnd <- vector("list", length = length(rocks))
-    # randomly relocate every rock in the shapefile
-    for (i in 1:length(rocks)) {
-      # second loop
-      # this is where we move each rock, one by one
-      # get a rock from our observed rocks to shift
-      ri <- rocks[i, ]
-      # we have to shift all of the coords relating to this rock...
-      # get coords of vertices (outline of rock)
-      cds <-
-        slot(slot(slot(ri, "polygons")[[1]], "Polygons")[[1]], "coords")
-      # get coords of labpt, labpt, bbox also (centrepoints and bounding box)
-      l1 <-
-        slot(slot(slot(ri, "polygons")[[1]], "Polygons")[[1]], "labpt")
-      l2 <- slot(slot(ri,  "polygons")[[1]], "labpt")
-      b1 <- slot(ri,  "bbox")
-      # get a random point in the excavation area to shift to
-      rn <- unname(rnd@coords[sample(1:length(rnd), 1), ])
-      # shift all the vertices coords
-      ofst <- cds[1, ] - rn
-      newcds <- t(apply(cds, 1, function(x)
-        x - ofst))
-      # shift lapt1 (centrepoint)
-      ofst <- l1 - rn
-      newl1 <- l1 - ofst
-      # shift lapt2 (centrepoint)
-      ofst <- l2 - rn
-      newl2 <- l2 - ofst
-      # shift bbox (bounding box)
-      ofst <- t(apply(b1, 2,  function(x)
-        x - rn))
-      newb1 <- b1 - ofst
-      # put these shifted points back into the polygon object
-      slot(slot(slot(ri, "polygons")[[1]], "Polygons")[[1]], "coords") <-
-        newcds
-      slot(slot(slot(ri, "polygons")[[1]], "Polygons")[[1]], "labpt") <-
-        newl1
-      slot(slot(ri,  "polygons")[[1]], "labpt") <- newl2
-      slot(ri, "bbox") <- newb1
-      # assign this rock to the list of rocks in the shapefile
-      rocks_rnd[[i]] <- ri
-    } # end rearrangemet of all the rocks in one shapefile
-    # this is where we collect each of the n shapefiles and
-    # put them in a list
-    # make list of SpatialPolygons
-    rocks_list[[j]] <- do.call(rbind, rocks_rnd)
-  }
-
-  return(rocks_list)
-  }
-
-
-#' Compute overlap area of polygons randomly shuffled
-#'
-#' Compute overlap area of polygons randomly shuffled
-#'
-#' @param input_polygons_randomly_shuffled SpatialPolygonsDataFrame, output from shift_poly_to_random_points function
-#' @param other_polygons SpatialPolygonsDataFrame, many polygons
-#'
-#' @export
-
-# Now we can write a function that will calculate the area of intersection
-# (or overlap) between rock polygons and skeleton polygons for each
-# of our `r n` random-shuffle shapefiles.
-
-compute_overlap_area_of_polygons_randomly_shuffled <-
-  function(input_polygons_randomly_shuffled,
-           other_polygons) {
-    rocks_list <- input_polygons_randomly_shuffled
-    skeles <-  other_polygons
-    skeles <- maptools::unionSpatialPolygons(skeles,
-                                   ID=rep(1,
-                                          times=length(skeles@polygons)))
-
-
-    # make a list to store the output of the function
-    int_area <- vector("list", length(length(rocks_list)))
-    for (i in 1:length(rocks_list)) {
-      # get polygons that are just the intersection of rocks and skeles
-      x <- PBSmapping::joinPolys(
-        PBSmapping::combinePolys(maptools::SpatialPolygons2PolySet(skeles)),
-        PBSmapping::combinePolys(maptools::SpatialPolygons2PolySet(rocks_list[[i]])),
-        "INT"
-      )
-      if(!is.null(x)){
-      x <- suppressWarnings(maptools::PolySet2SpatialPolygons(x))
-      # extract area of intersecting polygons
-      areas <- sapply(slot(x, "polygons"),
-                      function(x)
-                        sapply(slot(x, "Polygons"), slot, "area"))
-      # store output in list
-      int_area[[i]] <- sum(areas)
-      } else {
-        int_area[[i]] <- 0
+      # Check if point is within bounding box polygon
+      if (st_intersects(random_point, bounding_box_polygon, sparse = FALSE)[1]) {
+        break
       }
     }
-    random_areas <- data.frame(area = unlist(int_area))
-    return(random_areas)
+
+    # Calculate translation vector
+    dx <- random_x - input_coords[1]
+    dy <- random_y - input_coords[2]
+
+    # Shift all input polygons
+    shifted_polygons <- st_geometry(input_polygons) + c(dx, dy)
+    shifted_polygons <- st_set_crs(shifted_polygons, st_crs(input_polygons))
+
+    # Create sf object with original attributes
+    result_list[[i]] <- st_sf(
+      geometry = shifted_polygons,
+      st_drop_geometry(input_polygons)
+    )
   }
 
-#' Compute overlap area of polygons observed
+  return(result_list)
+}
+
+
+#' Compute overlap area for randomly shuffled polygons
 #'
-#' Compute overlap area of polygons observed
+#' @param input_polygons_randomly_shuffled list of sf objects from shift_poly_to_random_points
+#' @param other_polygons sf object representing fixed polygons
 #'
-#' @param input_polygons SpatialPolygonsDataFrame, many polygons
-#' @param other_polygons SpatialPolygonsDataFrame, many polygons
+#' @return data.frame with areas of overlap for each shuffle
+#' @export
+compute_overlap_area_of_polygons_randomly_shuffled <- function(
+    input_polygons_randomly_shuffled,
+    other_polygons) {
+
+  # Dissolve other_polygons to avoid counting overlaps multiple times
+  other_polygons_union <- st_union(other_polygons)
+
+  # Calculate overlap for each shuffle
+  areas <- sapply(input_polygons_randomly_shuffled, function(shuffled) {
+    # Union the shuffled polygons
+    shuffled_union <- st_union(shuffled)
+
+    # Calculate intersection
+    intersection <- st_intersection(shuffled_union, other_polygons_union)
+
+    # Calculate area (handling empty intersections)
+    if (length(intersection) == 0 || st_is_empty(intersection)) {
+      return(0)
+    } else {
+      return(st_area(intersection))
+    }
+  })
+
+  # Convert to numeric (removes units)
+  areas <- as.numeric(areas)
+
+  return(data.frame(area = areas))
+}
+
+
+#' Compute observed overlap area between two sets of polygons
+#'
+#' @param input_polygons sf object with first set of polygons
+#' @param other_polygons sf object with second set of polygons
+#'
+#' @return numeric value representing the area of overlap
+#' @export
+compute_overlap_area_of_polygons_observed <- function(input_polygons,
+                                                      other_polygons) {
+
+  # Union both sets of polygons
+  input_union <- st_union(input_polygons)
+  other_union <- st_union(other_polygons)
+
+  # Calculate intersection
+  intersection <- st_intersection(input_union, other_union)
+
+  # Calculate area
+  if (length(intersection) == 0 || st_is_empty(intersection)) {
+    return(0)
+  } else {
+    return(as.numeric(st_area(intersection)))
+  }
+}
+
+
+#' Plot polygons for visualization
+#'
+#' @param bounding_box_polygon sf object
+#' @param input_polygons sf object
+#' @param other_polygons sf object
+#' @param title character string for plot title
 #'
 #' @export
+plot_polygons <- function(bounding_box_polygon,
+                          input_polygons,
+                          other_polygons,
+                          title = "Plot of input polygons") {
 
-# Now we need to calculate our observed amount of overlap of actual rocks on
-# the skeletons so we can see how this compares to the distribution of random areas.
-
-compute_overlap_area_of_polygons_observed <-
-  function(input_polygons,
-           other_polygons){
-
-    rocks <- input_polygons
-    skeles <-  other_polygons
-
-    skeles <- maptools::unionSpatialPolygons(skeles,
-                                             ID=rep(1,
-                                                    times=length(skeles@polygons)))
-
-x <- PBSmapping::joinPolys( PBSmapping::combinePolys(maptools::SpatialPolygons2PolySet(rocks)),
-                            PBSmapping::combinePolys(maptools::SpatialPolygons2PolySet(skeles)),
-                "INT" )
-x <- suppressWarnings(maptools::PolySet2SpatialPolygons(x))
-# calculate area of intersecting polygons
-areas <- sapply(slot(x, "polygons"),
-                function(x) sapply(slot(x, "Polygons"), slot, "area"))
-obs_area <- sum(areas)
-
-return(obs_area)
+  ggplot() +
+    geom_sf(data = bounding_box_polygon, fill = NA, color = "black") +
+    geom_sf(data = input_polygons, fill = NA, color = "green", linewidth = 1) +
+    geom_sf(data = other_polygons, fill = NA, color = "red", linewidth = 1) +
+    theme_minimal() +
+    labs(title = title) +
+    theme(plot.title = element_text(hjust = 0.5))
 }
+
+
+
+
+
+
+#' Helper function to safely read shapefiles
+#' @param path path to shapefile
+#' @param verbose whether to print messages
+#' @export
+safe_read_shapefile <- function(path, verbose = FALSE) {
+  tryCatch({
+    # Try standard read
+    shp <- st_read(path, quiet = !verbose)
+
+    # Check if geometry is valid
+    if (!all(st_is_valid(shp))) {
+      if (verbose) message("Fixing invalid geometries...")
+      shp <- st_make_valid(shp)
+    }
+
+    return(shp)
+  }, error = function(e) {
+    if (verbose) {
+      message("Standard read failed, trying alternative method...")
+      message("Error was: ", e$message)
+    }
+
+    # Try reading with different options
+    shp <- st_read(path, quiet = !verbose,
+                   options = c("ENCODING=UTF-8"))
+
+    if (!all(st_is_valid(shp))) {
+      if (verbose) message("Fixing invalid geometries...")
+      shp <- st_make_valid(shp)
+    }
+
+    return(shp)
+  })
+}
+
+

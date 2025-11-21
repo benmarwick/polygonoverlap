@@ -36,19 +36,31 @@ remotes::install_github("benmarwick/polygonoverlap")
 ## Example
 
 Let’s load the library and some polygon shapefiles to work with.
-Currently this works with shapefiles that are loaded into R using
-`rgdal::readOGR()` to produce a `SpatialPolygonsDataFrame` object.
+Currently this works with shapefiles that are loaded into R to produce
+an `sf` object.
 
 ``` r
 library(polygonoverlap)
 library(here)
+library(sf)
+library(ggplot2)
+#> Warning: package 'ggplot2' was built under R version 4.5.1
 ```
 
 ``` r
 # load the data contained in the pkg so we can demonstrate
-bounding_box_polygon <- rgdal::readOGR(here("data-raw/MK_II_excv_outline.shp"), verbose = FALSE)
-input_polygons <- rgdal::readOGR(here("data-raw/rock_poly.shp"), verbose = FALSE)
-other_polygons <- rgdal::readOGR(here("data-raw/skele_poly.shp"), verbose = FALSE)
+
+bounding_box_polygon <- 
+  safe_read_shapefile(here("data-raw/MK_II_excv_outline.shp"), 
+          verbose = FALSE)
+
+input_polygons <- 
+  safe_read_shapefile(here("data-raw/rock_poly.shp"), 
+                      verbose = FALSE)
+
+other_polygons <- 
+  safe_read_shapefile(here("data-raw/skele_poly.shp"), 
+                      verbose = FALSE)
 ```
 
 We can take a quick look to see these polygons, green is our
@@ -56,10 +68,10 @@ We can take a quick look to see these polygons, green is our
 `other_polygons`, which we assume are fixed:
 
 ``` r
-sp::plot(bounding_box_polygon)
-sp::plot(input_polygons, add = TRUE, border = "green")
-sp::plot(other_polygons, add = TRUE, border = "red")
-title(main = "Plot of input polygons")
+# Visualize the polygons
+plot_polygons(bounding_box_polygon, 
+              input_polygons, 
+              other_polygons)
 ```
 
 <img src="man/figures/README-unnamed-chunk-2-1.png" width="100%" />
@@ -74,11 +86,13 @@ save the locations of the polygons for each random shuffle event:
 
 ``` r
 # This may take a minute or two
-n <- 10000
+
+ n <- 100000
+
 input_polygons_randomly_shuffled <- 
-  shift_poly_to_random_points(bounding_box_polygon,
-                              input_polygons,
-                              n)
+   shift_poly_to_random_points(bounding_box_polygon, 
+                               input_polygons, 
+                               n)
 ```
 
 For each random shuffle event, we compute the size of the area of
@@ -86,25 +100,14 @@ intersection (or overlap) between our `input_polygons` and another set
 of polygons (we do not shuffle this other set):
 
 ``` r
+# Compute overlap areas for random shuffles
+
 areas_of_overlap_from_random_shuffle <- 
-  compute_overlap_area_of_polygons_randomly_shuffled(input_polygons_randomly_shuffled, 
-                                                     other_polygons)
+   compute_overlap_area_of_polygons_randomly_shuffled(
+     input_polygons_randomly_shuffled,
+     other_polygons)
+ 
 ```
-
-We can make a plot of this distribution:
-
-``` r
-library(ggplot2)
-ggplot(areas_of_overlap_from_random_shuffle,
-       aes(area)) +
-  geom_histogram() + 
-    labs(x = expression("Areas of intersection of our two sets of polygons (m"^2*")"),
-         y = "Frequency") +
-  ggtitle(paste0("Distribution of areas of polygon overlap produced by ", n, " random shuffles"))
-#> `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
-```
-
-<img src="man/figures/README-unnamed-chunk-5-1.png" width="100%" />
 
 Now we can compare this randomly generated distribution to the observed
 overlap of our two sets of shapefiles:
@@ -115,49 +118,42 @@ observed_polygon_overlap <-
                                             other_polygons)
 ```
 
-The value we get here is 0.53 square meteres. We can combine this with
+The value we get here is 0.542 square meteres. We can combine this with
 our random distribution data to compute a p-value:
 
 ``` r
-pval <- 1 - sum(areas_of_overlap_from_random_shuffle$area <= observed_polygon_overlap) / n
+ # Calculate p-value
+pval <- 1 - sum(areas_of_overlap_from_random_shuffle$area <= 
+                observed_polygon_overlap) / n
+ 
 ```
 
-Using this p-vaue we can say that 2.59% of our randomly-shuffled input
+Using this p-vaue we can say that 2.55% of our randomly-shuffled input
 shapefiles result in an overlap with the other shapefiles that is equal
-to or greater than our observed overlap area. This indicates that our
-observed area of overlap is probably not random but a result of
-deliberate placement of the input polygons over or near the other
-polygons. The answer to the question is ‘yes, the association of the two
-polygon sets is non-random’.
+to or greater than our observed overlap area. With such a tiny
+proportion of the random distribution equal to or greater than our
+observed distribution, this indicates that our observed area of overlap
+is probably not random but a result of deliberate placement of the input
+polygons over or near the other polygons. The answer to the question is
+‘yes, the association of the two polygon sets is non-random’.
 
 And we can show the observed value and p-value on the histogram like
 this:
 
 ``` r
-ggplot(areas_of_overlap_from_random_shuffle,
-       aes(area)) +
-  geom_histogram() + 
-    labs(x = expression("Areas of intersection of our two sets of polygons (m"^2*")"),
-         y = "Frequency") +
-  ggtitle(paste0("Distribution of areas of polygon overlap produced by ", 
-                 n, 
-                 " random shuffles")) + 
-  geom_vline(xintercept = observed_polygon_overlap, 
-             col = "red") + 
-  ylim(0, 1000) +
-  annotate("text", 
-           x = 0.425, y = 200, 
-           label = paste0("Observed \nvalue = ",
-                         round(observed_polygon_overlap,2), 
-                         " \n(p = ", round(pval,3), ")"), col = "red")
-#> `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+# Plot results
+plot_overlap_distribution(areas_of_overlap_from_random_shuffle,
+                         observed_polygon_overlap,
+                         n,
+                         pval)
 ```
 
-<img src="man/figures/README-unnamed-chunk-8-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-7-1.png" width="100%" />
 
 ## Background
 
-This method was developed for this publication:
+This method was originally developed for this publication and has been
+modified slightly to adapt it work with the sf package:
 
 > Lowe, Kelsey M., Lynley A. Wallis, Colin Pardoe, Ben Marwick, Chris
 > Clarkson, Tiina Manne, Mike A. Smith and Richard Fullagar 2014.
@@ -165,8 +161,8 @@ This method was developed for this publication:
 > Australia. *Archaeology in Oceania*
 > <https://doi.org/10.1002/arco.5039>
 
-This package is an excerpt of code and data prepared for that paper,
-which was originally uploaded to
+This package is an updated exerpt of code and data prepared for that
+paper, which was originally uploaded to
 <https://github.com/benmarwick/Rocks-and-burials-at-Madjebebe> and
 archived at <http://dx.doi.org/10.5281/zenodo.10616>
 

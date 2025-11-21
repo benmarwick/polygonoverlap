@@ -2,18 +2,20 @@
 % Please edit documentation in R/hello.R
 \name{shift_poly_to_random_points}
 \alias{shift_poly_to_random_points}
-\title{Shift polygons to random points}
+\title{Shift polygons to random points within a bounding box}
 \usage{
-shift_poly_to_random_points(bounding_box_polygon, input_polygons,
-  n = 100)
+shift_poly_to_random_points(bounding_box_polygon, input_polygons, n)
 }
 \arguments{
-\item{bounding_box_polygon}{SpatialPolygonsDataFrame, a single polygon bounding box}
+\item{bounding_box_polygon}{sf object representing the bounding box}
 
-\item{input_polygons}{SpatialPolygonsDataFrame, many polygons}
+\item{input_polygons}{sf object with polygons to be randomly shifted}
 
-\item{n}{integer, 100 to 1000 are usually good values}
+\item{n}{number of random shuffles to perform}
+}
+\value{
+A list of sf objects, each representing one random shuffle
 }
 \description{
-Shift polygons to random points in a bounding box
+Shift polygons to random points within a bounding box
 }

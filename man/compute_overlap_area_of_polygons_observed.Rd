@@ -2,15 +2,18 @@
 % Please edit documentation in R/hello.R
 \name{compute_overlap_area_of_polygons_observed}
 \alias{compute_overlap_area_of_polygons_observed}
-\title{Compute overlap area of polygons observed}
+\title{Compute observed overlap area between two sets of polygons}
 \usage{
 compute_overlap_area_of_polygons_observed(input_polygons, other_polygons)
 }
 \arguments{
-\item{input_polygons}{SpatialPolygonsDataFrame, many polygons}
+\item{input_polygons}{sf object with first set of polygons}
 
-\item{other_polygons}{SpatialPolygonsDataFrame, many polygons}
+\item{other_polygons}{sf object with second set of polygons}
+}
+\value{
+numeric value representing the area of overlap
 }
 \description{
-Compute overlap area of polygons observed
+Compute observed overlap area between two sets of polygons
 }

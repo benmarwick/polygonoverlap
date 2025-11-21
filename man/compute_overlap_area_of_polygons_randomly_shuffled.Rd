@@ -2,17 +2,21 @@
 % Please edit documentation in R/hello.R
 \name{compute_overlap_area_of_polygons_randomly_shuffled}
 \alias{compute_overlap_area_of_polygons_randomly_shuffled}
-\title{Compute overlap area of polygons randomly shuffled}
+\title{Compute overlap area for randomly shuffled polygons}
 \usage{
-
-  compute_overlap_area_of_polygons_randomly_shuffled(input_polygons_randomly_shuffled,
-  other_polygons)
+compute_overlap_area_of_polygons_randomly_shuffled(
+  input_polygons_randomly_shuffled,
+  other_polygons
+)
 }
 \arguments{
-\item{input_polygons_randomly_shuffled}{SpatialPolygonsDataFrame, output from shift_poly_to_random_points function}
+\item{input_polygons_randomly_shuffled}{list of sf objects from shift_poly_to_random_points}
 
-\item{other_polygons}{SpatialPolygonsDataFrame, many polygons}
+\item{other_polygons}{sf object representing fixed polygons}
+}
+\value{
+data.frame with areas of overlap for each shuffle
 }
 \description{
-Compute overlap area of polygons randomly shuffled
+Compute overlap area for randomly shuffled polygons
 }

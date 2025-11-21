@@ -2,4 +2,7 @@
 
 export(compute_overlap_area_of_polygons_observed)
 export(compute_overlap_area_of_polygons_randomly_shuffled)
+export(plot_overlap_distribution)
+export(plot_polygons)
+export(safe_read_shapefile)
 export(shift_poly_to_random_points)
