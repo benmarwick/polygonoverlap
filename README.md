@@ -85,7 +85,7 @@ our bounding box area. We repeat this random shuffle many times, and
 save the locations of the polygons for each random shuffle event:
 
 ``` r
-# This may take a minute or two
+# This may take a few minutes
 
  n <- 100000
 
@@ -128,7 +128,7 @@ pval <- 1 - sum(areas_of_overlap_from_random_shuffle$area <=
  
 ```
 
-Using this p-vaue we can say that 2.55% of our randomly-shuffled input
+Using this p-vaue we can say that 2.423% of our randomly-shuffled input
 shapefiles result in an overlap with the other shapefiles that is equal
 to or greater than our observed overlap area. With such a tiny
 proportion of the random distribution equal to or greater than our
@@ -142,10 +142,31 @@ this:
 
 ``` r
 # Plot results
-plot_overlap_distribution(areas_of_overlap_from_random_shuffle,
-                         observed_polygon_overlap,
-                         n,
-                         pval)
+  ggplot(areas_of_overlap_from_random_shuffle) +
+  aes(x = area) +
+    geom_histogram(bins = 30, 
+                   fill = "gray70", 
+                   color = "black") +
+    labs(
+      x = expression("Areas of intersection of our two sets of polygons (m"^2*")"),
+      y = "Frequency",
+      title = paste0("Distribution of areas of polygon overlap produced by\n",
+                     n, " random shuffles")
+    ) +
+    geom_vline(xintercept = observed_polygon_overlap, 
+               col = "red", 
+               linewidth = 1) +
+    annotate("text",
+             x = observed_polygon_overlap * 0.85,
+             y = max(table(cut(areas_of_overlap_from_random_shuffle$area,
+                               30))) * 0.95,
+             label = paste0("Observed\nvalue = ",
+                            round(observed_polygon_overlap, 2),
+                            "\n(p = ", round(pval, 3), ")"),
+             col = "red",
+             hjust = 1) +
+    theme_minimal() +
+    theme(plot.title = element_text(hjust = 0.5))
 ```
 
 <img src="man/figures/README-unnamed-chunk-7-1.png" width="100%" />
